@@ -23,7 +23,7 @@
                 stencil_load_op: DontCare,
                 stencil_store_op: DontCare,
                 initial_layout: Undefined,
-                final_layout: ColorAttachmentOptimal,
+                final_layout: ShaderReadOnlyOptimal,
             ),
             (
                 //swapchain output
@@ -86,14 +86,13 @@
                 src_subpass: Index(0),
                 dst_subpass: Index(1),
                 src_stage_mask: ColorAttachmentOutput,
-                dst_stage_mask: ColorAttachmentOutput,
+                dst_stage_mask: FragmentShader,
                 src_access_mask: [
                     ColorAttachmentRead,
                     ColorAttachmentWrite,
                 ],
                 dst_access_mask: [
-                    ColorAttachmentRead,
-                    ColorAttachmentWrite,
+                    ShaderRead,
                 ],
                 dependency_flags: Empty,
             ),

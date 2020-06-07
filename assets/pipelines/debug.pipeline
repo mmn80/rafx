@@ -13,7 +13,7 @@
 
                 // This pipeline passes results to the compositor. The compositor will be reading our color attachment
                 // via a sampler
-                final_layout: ShaderReadOnlyOptimal,
+                final_layout: ColorAttachmentOptimal,
             ),
             (
                 flags: None,

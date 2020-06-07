@@ -150,7 +150,7 @@ impl VkCompositeRenderPass {
         renderpass: vk::RenderPass,
         framebuffer: vk::Framebuffer,
         command_buffer: vk::CommandBuffer,
-        pipeline: vk::Pipeline,
+        pipelines: &[vk::Pipeline],
         pipeline_layout: vk::PipelineLayout,
         descriptor_set: vk::DescriptorSet
     ) -> VkResult<()> {
@@ -194,10 +194,13 @@ impl VkCompositeRenderPass {
                 vk::SubpassContents::INLINE,
             );
 
+            // subpass 0 is the resolve
+            logical_device.cmd_next_subpass(command_buffer, vk::SubpassContents::INLINE);
+
             logical_device.cmd_bind_pipeline(
                 command_buffer,
                 vk::PipelineBindPoint::GRAPHICS,
-                pipeline,
+                pipelines[1],
             );
 
             logical_device.cmd_bind_descriptor_sets(
@@ -233,7 +236,7 @@ impl VkCompositeRenderPass {
             self.pipeline_info.renderpass.get_raw(),
             self.frame_buffers[present_index],
             self.command_buffers[present_index],
-            self.pipeline_info.pipeline.get_raw().pipeline,
+            &self.pipeline_info.pipeline.get_raw().pipelines,
             self.pipeline_info.pipeline_layout.get_raw().pipeline_layout,
             descriptor_set
         )
