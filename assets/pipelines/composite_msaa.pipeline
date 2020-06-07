@@ -2,31 +2,6 @@
     renderpass: (
         attachments: [
             (
-                //resolve FROM this
-                flags: None,
-                format: MatchColorAttachment,
-                samples: SampleCount4,
-                load_op: Load,
-                store_op: Store,
-                stencil_load_op: DontCare,
-                stencil_store_op: DontCare,
-                initial_layout: ColorAttachmentOptimal,
-                final_layout: ColorAttachmentOptimal,
-            ),
-            (
-                //resolve TO this
-                flags: None,
-                format: MatchColorAttachment,
-                samples: SampleCount1,
-                load_op: DontCare,
-                store_op: Store,
-                stencil_load_op: DontCare,
-                stencil_store_op: DontCare,
-                initial_layout: Undefined,
-                final_layout: ShaderReadOnlyOptimal,
-            ),
-            (
-                //swapchain output
                 flags: None,
                 format: MatchSurface,
                 samples: SampleCount1,
@@ -48,23 +23,6 @@
                         layout: ColorAttachmentOptimal,
                     ),
                 ],
-                resolve_attachments: [
-                    (
-                        attachment: Index(1),
-                        layout: ColorAttachmentOptimal,
-                    ),
-                ],
-                depth_stencil_attachment: None,
-            ),
-            (
-                pipeline_bind_point: Graphics,
-                input_attachments: [],
-                color_attachments: [
-                    (
-                        attachment: Index(2),
-                        layout: ColorAttachmentOptimal,
-                    ),
-                ],
                 resolve_attachments: [],
                 depth_stencil_attachment: None,
             ),
@@ -79,20 +37,6 @@
                 dst_access_mask: [
                     ColorAttachmentRead,
                     ColorAttachmentWrite,
-                ],
-                dependency_flags: Empty,
-            ),
-            (
-                src_subpass: Index(0),
-                dst_subpass: Index(1),
-                src_stage_mask: ColorAttachmentOutput,
-                dst_stage_mask: FragmentShader,
-                src_access_mask: [
-                    ColorAttachmentRead,
-                    ColorAttachmentWrite,
-                ],
-                dst_access_mask: [
-                    ShaderRead,
                 ],
                 dependency_flags: Empty,
             ),
@@ -129,7 +73,7 @@
         line_width: 1,
     ),
     multisample_state: (
-        rasterization_samples: SampleCount4,
+        rasterization_samples: SampleCount1,
         sample_shading_enable: false,
         min_sample_shading: 0,
         sample_mask: None,

@@ -513,6 +513,42 @@ fn do_generate_mips_for_image(
     }
 }
 
+pub fn transition_simple(
+    logical_device: &ash::Device,
+    command_buffer: vk::CommandBuffer,
+    image: vk::Image,
+    src_access_mask: vk::AccessFlags,
+    dst_access_mask: vk::AccessFlags,
+    src_layout: vk::ImageLayout,
+    dst_layout: vk::ImageLayout,
+    src_stage: vk::PipelineStageFlags,
+    dst_stage: vk::PipelineStageFlags,
+    subresource_range: &vk::ImageSubresourceRange,
+) {
+    let barrier = vk::ImageMemoryBarrier::builder()
+        .src_access_mask(src_access_mask)
+        .dst_access_mask(dst_access_mask)
+        .old_layout(src_layout)
+        .new_layout(dst_layout)
+        .src_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+        .dst_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+        .image(image)
+        .subresource_range(*subresource_range)
+        .build();
+
+    unsafe {
+        logical_device.cmd_pipeline_barrier(
+            command_buffer,
+            src_stage,
+            dst_stage,
+            vk::DependencyFlags::BY_REGION,
+            &[],
+            &[],
+            &[barrier],
+        );
+    }
+}
+
 fn transition_for_mipmap(
     logical_device: &ash::Device,
     command_buffer: vk::CommandBuffer,

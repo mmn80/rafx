@@ -35,6 +35,9 @@ pub struct VkCompositeRenderPass {
     // Command pool and list of command buffers, one per present index
     pub command_pool: vk::CommandPool,
     pub command_buffers: Vec<vk::CommandBuffer>,
+
+    target_image: vk::Image,
+    resolved_image: vk::Image,
 }
 
 impl VkCompositeRenderPass {
@@ -76,6 +79,8 @@ impl VkCompositeRenderPass {
             frame_buffers,
             command_pool,
             command_buffers,
+            target_image: swapchain.color_attachment.target_image(),
+            resolved_image: swapchain.color_attachment.resolved_image(),
         })
     }
 
@@ -113,7 +118,7 @@ impl VkCompositeRenderPass {
                 if swapchain_info.msaa_level == MsaaLevel::Sample1 {
                     vec![swapchain_image_view]
                 } else {
-                    vec![color_msaa_image_view, color_resolve_image_view, swapchain_image_view]
+                    vec![swapchain_image_view]
                 };
 
                 let frame_buffer_create_info = vk::FramebufferCreateInfo::builder()
@@ -147,26 +152,18 @@ impl VkCompositeRenderPass {
     fn update_command_buffer(
         device_context: &VkDeviceContext,
         swapchain_info: &SwapchainInfo,
+        target_image: vk::Image,
+        resolved_image: vk::Image,
         renderpass: vk::RenderPass,
         framebuffer: vk::Framebuffer,
         command_buffer: vk::CommandBuffer,
-        pipelines: &[vk::Pipeline],
+        pipeline: vk::Pipeline,
         pipeline_layout: vk::PipelineLayout,
         descriptor_set: vk::DescriptorSet
     ) -> VkResult<()> {
         let command_buffer_begin_info = vk::CommandBufferBeginInfo::builder();
 
         let clear_values = [
-            vk::ClearValue {
-                color: vk::ClearColorValue {
-                    float32: [0.0, 0.0, 0.0, 1.0],
-                },
-            },
-            vk::ClearValue {
-                color: vk::ClearColorValue {
-                    float32: [0.0, 0.0, 0.0, 1.0],
-                },
-            },
             vk::ClearValue {
                 color: vk::ClearColorValue {
                     float32: [0.0, 0.0, 0.0, 1.0],
@@ -188,19 +185,45 @@ impl VkCompositeRenderPass {
             let logical_device = device_context.device();
             logical_device.begin_command_buffer(command_buffer, &command_buffer_begin_info)?;
 
+            let subresource = vk::ImageSubresourceLayers::builder()
+                .aspect_mask(vk::ImageAspectFlags::COLOR)
+                .mip_level(0)
+                .base_array_layer(0)
+                .layer_count(1);
+
+            // crate::image_utils::transition_simple(
+            //     device_context,
+            //
+            // )
+
+            let regions = vk::ImageResolve::builder()
+                .src_subresource(*subresource)
+                .dst_subresource(*subresource)
+                .extent(vk::Extent3D {
+                    width: swapchain_info.extents.width,
+                    height: swapchain_info.extents.height,
+                    depth: 1
+                });
+
+            logical_device.cmd_resolve_image(
+                command_buffer,
+                target_image,
+                vk::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+                resolved_image,
+                vk::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+                &[*regions]
+            );
+
             logical_device.cmd_begin_render_pass(
                 command_buffer,
                 &render_pass_begin_info,
                 vk::SubpassContents::INLINE,
             );
 
-            // subpass 0 is the resolve
-            logical_device.cmd_next_subpass(command_buffer, vk::SubpassContents::INLINE);
-
             logical_device.cmd_bind_pipeline(
                 command_buffer,
                 vk::PipelineBindPoint::GRAPHICS,
-                pipelines[1],
+                pipeline,
             );
 
             logical_device.cmd_bind_descriptor_sets(
@@ -233,10 +256,12 @@ impl VkCompositeRenderPass {
         Self::update_command_buffer(
             &self.device_context,
             &self.swapchain_info,
+            self.target_image,
+            self.resolved_image,
             self.pipeline_info.renderpass.get_raw(),
             self.frame_buffers[present_index],
             self.command_buffers[present_index],
-            &self.pipeline_info.pipeline.get_raw().pipelines,
+            self.pipeline_info.pipeline.get_raw().pipelines[0],
             self.pipeline_info.pipeline_layout.get_raw().pipeline_layout,
             descriptor_set
         )
