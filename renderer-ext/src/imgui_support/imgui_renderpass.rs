@@ -364,7 +364,7 @@ impl VkImGuiRenderPass {
         let renderpass_attachments = [
             vk::AttachmentDescription::builder()
                 .format(swapchain_info.color_format)
-                .samples(swapchain_info.msaa_level.into())
+                .samples(vk::SampleCountFlags::TYPE_1)
                 .load_op(vk::AttachmentLoadOp::LOAD)
                 .store_op(vk::AttachmentStoreOp::STORE)
                 .stencil_load_op(vk::AttachmentLoadOp::DONT_CARE)
@@ -539,7 +539,7 @@ impl VkImGuiRenderPass {
         swapchain_image_views
             .iter()
             .map(|&swapchain_image_view| {
-                let framebuffer_attachments = [color_image_view, swapchain_image_view];
+                let framebuffer_attachments = [swapchain_image_view];
                 let frame_buffer_create_info = vk::FramebufferCreateInfo::builder()
                     .render_pass(*renderpass)
                     .attachments(&framebuffer_attachments)
