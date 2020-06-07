@@ -577,7 +577,7 @@ impl GameRenderer {
         per_frame_data.spot_lights[0].range = 8.0;
         per_frame_data.spot_lights[0].color = [1.0, 1.0, 1.0, 1.0].into();
         per_frame_data.spot_lights[0].intensity = 100.0;
-/*
+
         for i in 0..per_frame_data.point_light_count {
             let light = &per_frame_data.point_lights[i as usize];
             self.debug_draw_3d.add_sphere(
@@ -598,7 +598,7 @@ impl GameRenderer {
                 8
             );
         }
-*/
+
 
 
         self.mesh_material_per_frame_data.set_buffer_data(0, &per_frame_data);
@@ -626,61 +626,61 @@ impl GameRenderer {
         //
         // Sprite renderpass
         //
-        if let Some(sprite_renderpass) = &mut self.sprite_renderpass {
-            log::trace!("sprite_renderpass update");
-            let dyn_pass_material_instance = self.sprite_custom_material.as_ref().unwrap().pass(0);
-            let static_pass_material_instance = self.resource_manager.get_material_instance_descriptor_sets_for_current_frame(&self.sprite_material_instance, 0);
+        // if let Some(sprite_renderpass) = &mut self.sprite_renderpass {
+        //     log::trace!("sprite_renderpass update");
+        //     let dyn_pass_material_instance = self.sprite_custom_material.as_ref().unwrap().pass(0);
+        //     let static_pass_material_instance = self.resource_manager.get_material_instance_descriptor_sets_for_current_frame(&self.sprite_material_instance, 0);
 
-            //let pass = self.sprite_material_instance.asset.as_ref().unwrap().pass(0);
+        //     //let pass = self.sprite_material_instance.asset.as_ref().unwrap().pass(0);
 
-            // Pass 0 is "global"
-            let descriptor_set_per_pass = dyn_pass_material_instance
-                .descriptor_set_layout(0)
-                .descriptor_set()
-                .get_raw_for_gpu_read(&self.resource_manager);
+        //     // Pass 0 is "global"
+        //     let descriptor_set_per_pass = dyn_pass_material_instance
+        //         .descriptor_set_layout(0)
+        //         .descriptor_set()
+        //         .get_raw_for_gpu_read(&self.resource_manager);
 
-            // Pass 1 is per-object
-            let descriptor_set_per_texture = dyn_pass_material_instance
-                .descriptor_set_layout(1)
-                .descriptor_set()
-                .get_raw_for_gpu_read(&self.resource_manager);
-            //let descriptor_set_per_texture = static_pass_material_instance.descriptor_sets[1];
+        //     // Pass 1 is per-object
+        //     let descriptor_set_per_texture = dyn_pass_material_instance
+        //         .descriptor_set_layout(1)
+        //         .descriptor_set()
+        //         .get_raw_for_gpu_read(&self.resource_manager);
+        //     //let descriptor_set_per_texture = static_pass_material_instance.descriptor_sets[1];
 
-            sprite_renderpass.update(
-                present_index,
-                1.0,
-                //&self.sprite_resource_manager,
-                descriptor_set_per_pass,
-                &[descriptor_set_per_texture],
-                &self.time_state,
-            )?;
+        //     sprite_renderpass.update(
+        //         present_index,
+        //         1.0,
+        //         //&self.sprite_resource_manager,
+        //         descriptor_set_per_pass,
+        //         &[descriptor_set_per_texture],
+        //         &self.time_state,
+        //     )?;
 
-            command_buffers.push(sprite_renderpass.command_buffers[present_index].clone());
-        }
+        //     command_buffers.push(sprite_renderpass.command_buffers[present_index].clone());
+        // }
 
-        //
-        // Mesh renderpass
-        //
-        if let Some(mesh_renderpass) = &mut self.mesh_renderpass {
-            log::trace!("mesh_renderpass update");
-            let mesh_pipeline_info = self.resource_manager.get_pipeline_info(
-                &self.mesh_material,
-                self.swapchain_surface_info.as_ref().unwrap(),
-                0,
-            );
+        // //
+        // // Mesh renderpass
+        // //
+        // if let Some(mesh_renderpass) = &mut self.mesh_renderpass {
+        //     log::trace!("mesh_renderpass update");
+        //     let mesh_pipeline_info = self.resource_manager.get_pipeline_info(
+        //         &self.mesh_material,
+        //         self.swapchain_surface_info.as_ref().unwrap(),
+        //         0,
+        //     );
 
-            let descriptor_set_per_pass = self.mesh_material_per_frame_data.descriptor_set().get_raw_for_cpu_write(&self.resource_manager);
+        //     let descriptor_set_per_pass = self.mesh_material_per_frame_data.descriptor_set().get_raw_for_cpu_write(&self.resource_manager);
 
-            mesh_renderpass.update(
-                &mesh_pipeline_info,
-                present_index,
-                descriptor_set_per_pass,
-                &self.meshes,
-                asset_resource,
-                &self.resource_manager
-            )?;
-            command_buffers.push(mesh_renderpass.command_buffers[present_index].clone());
-        }
+        //     mesh_renderpass.update(
+        //         &mesh_pipeline_info,
+        //         present_index,
+        //         descriptor_set_per_pass,
+        //         &self.meshes,
+        //         asset_resource,
+        //         &self.resource_manager
+        //     )?;
+        //     command_buffers.push(mesh_renderpass.command_buffers[present_index].clone());
+        // }
 
         if let Some(debug_renderpass) = &mut self.debug_renderpass {
             log::trace!("debug_renderpass update");

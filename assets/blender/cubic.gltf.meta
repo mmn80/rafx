@@ -1,6 +1,6 @@
 (
     version: 1,
-    import_hash: Some(16918595347520562351),
+    import_hash: Some(3387833335358837099),
     importer_version: 22,
     importer_type: "fc9ae812-110d-4daf-9223-e87b40966c6b",
     importer_options: (),
@@ -31,7 +31,7 @@
             ],
             build_pipeline: None,
             artifact: Some((
-                hash: 6965815962304163190,
+                hash: 2899874997487377883,
                 id: "c04c0aca-4f1f-4800-9b78-6bcd5f9d4454",
                 build_deps: [],
                 load_deps: [],
@@ -49,7 +49,7 @@
             ],
             build_pipeline: None,
             artifact: Some((
-                hash: 4257718239897521673,
+                hash: 817709059693726709,
                 id: "d9a35d5f-03a6-42c4-b7b1-7b34393f66dc",
                 build_deps: [
                     Uuid("c04c0aca-4f1f-4800-9b78-6bcd5f9d4454"),
@@ -71,7 +71,7 @@
             ],
             build_pipeline: None,
             artifact: Some((
-                hash: 17578603295639795210,
+                hash: 3893140398833109457,
                 id: "fc554750-8cb0-4ad5-b96b-666285b16e9c",
                 build_deps: [
                     Uuid("be831a21-f4f6-45d4-b9eb-e1bb6fc19d22"),
@@ -84,8 +84,8 @@
                     Uuid("be831a21-f4f6-45d4-b9eb-e1bb6fc19d22"),
                 ],
                 compression: None,
-                compressed_size: Some(293),
-                uncompressed_size: Some(293),
+                compressed_size: Some(414),
+                uncompressed_size: Some(414),
                 type_id: "0d8cacf7-79df-4aa6-b99e-659a9c3b5e6b",
             )),
         ),
@@ -96,7 +96,7 @@
             ],
             build_pipeline: None,
             artifact: Some((
-                hash: 9562916996854202930,
+                hash: 1503460731661807020,
                 id: "fbf3d6f6-4af6-456f-accf-79a85a7d20b5",
                 build_deps: [],
                 load_deps: [],
@@ -113,7 +113,7 @@
             ],
             build_pipeline: None,
             artifact: Some((
-                hash: 12054980289565372149,
+                hash: 5702330464378812270,
                 id: "5dac4804-1623-4fee-8f28-409f3733a8f6",
                 build_deps: [],
                 load_deps: [],
@@ -131,11 +131,11 @@
             ],
             build_pipeline: None,
             artifact: Some((
-                hash: 18026030370562169163,
+                hash: 14119640779905392845,
                 id: "ae827051-0e78-4f7a-9f8c-6673c97b3a1a",
                 build_deps: [
-                    Uuid("5dac4804-1623-4fee-8f28-409f3733a8f6"),
                     Uuid("fbf3d6f6-4af6-456f-accf-79a85a7d20b5"),
+                    Uuid("5dac4804-1623-4fee-8f28-409f3733a8f6"),
                 ],
                 load_deps: [
                     Uuid("5dac4804-1623-4fee-8f28-409f3733a8f6"),

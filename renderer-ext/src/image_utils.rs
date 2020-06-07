@@ -59,15 +59,15 @@ pub struct DecodedTexture {
 
 // Provides default settings for an image that's loaded without metadata specifying mip settings
 pub fn default_mip_settings_for_image(width: u32, height: u32) -> DecodedTextureMips {
-    let max_dimension = std::cmp::max(width, height);
-    let mip_level_count = (max_dimension as f32).log2().floor() as u32 + 1;
-    let decoded_texture_mip_info = DecodedTextureMipInfo {
-        mip_level_count
-    };
+    // let max_dimension = std::cmp::max(width, height);
+    // let mip_level_count = (max_dimension as f32).log2().floor() as u32 + 1;
+    // let decoded_texture_mip_info = DecodedTextureMipInfo {
+    //     mip_level_count
+    // };
 
-    DecodedTextureMips::Runtime(decoded_texture_mip_info)
+    // DecodedTextureMips::Runtime(decoded_texture_mip_info)
 
-    //DecodedTextureMips::None
+    DecodedTextureMips::None
 }
 
 pub fn decode_texture(
