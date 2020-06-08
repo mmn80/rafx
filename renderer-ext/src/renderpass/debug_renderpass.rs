@@ -350,7 +350,7 @@ impl VkDebugRenderPass {
         swapchain_image_views
             .iter()
             .map(|&swapchain_image_view| {
-                let framebuffer_attachments = [swapchain_image_view, depth_image_view];
+                let framebuffer_attachments = [color_image_view, depth_image_view];
                 let frame_buffer_create_info = vk::FramebufferCreateInfo::builder()
                     .render_pass(*renderpass)
                     .attachments(&framebuffer_attachments)

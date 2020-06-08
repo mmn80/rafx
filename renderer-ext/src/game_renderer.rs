@@ -682,23 +682,23 @@ impl GameRenderer {
         //     command_buffers.push(mesh_renderpass.command_buffers[present_index].clone());
         // }
 
-        // if let Some(debug_renderpass) = &mut self.debug_renderpass {
-        //     log::trace!("debug_renderpass update");
-        //     let debug_pipeline_info = self.resource_manager.get_pipeline_info(
-        //         &self.debug_material,
-        //         self.swapchain_surface_info.as_ref().unwrap(),
-        //         0,
-        //     );
+        if let Some(debug_renderpass) = &mut self.debug_renderpass {
+            log::trace!("debug_renderpass update");
+            let debug_pipeline_info = self.resource_manager.get_pipeline_info(
+                &self.debug_material,
+                self.swapchain_surface_info.as_ref().unwrap(),
+                0,
+            );
 
-        //     let descriptor_set_per_pass = self.debug_material_per_frame_data.descriptor_set().get_raw_for_cpu_write(&self.resource_manager);
+            let descriptor_set_per_pass = self.debug_material_per_frame_data.descriptor_set().get_raw_for_cpu_write(&self.resource_manager);
 
-        //     debug_renderpass.update(
-        //         present_index,
-        //         descriptor_set_per_pass,
-        //         self.debug_draw_3d.take_line_lists(),
-        //     )?;
-        //     command_buffers.push(debug_renderpass.command_buffers[present_index].clone());
-        // }
+            debug_renderpass.update(
+                present_index,
+                descriptor_set_per_pass,
+                self.debug_draw_3d.take_line_lists(),
+            )?;
+            command_buffers.push(debug_renderpass.command_buffers[present_index].clone());
+        }
 
         //
         // imgui
