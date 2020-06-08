@@ -366,7 +366,7 @@ impl VkImGuiRenderPass {
             vk::AttachmentDescription::builder()
                 //.format(swapchain_info.surface_format.format)
                 .format(swapchain_info.color_format)
-                .samples(vk::SampleCountFlags::TYPE_1)
+                .samples(vk::SampleCountFlags::TYPE_4)
                 .load_op(vk::AttachmentLoadOp::LOAD)
                 .store_op(vk::AttachmentStoreOp::STORE)
                 .stencil_load_op(vk::AttachmentLoadOp::DONT_CARE)
@@ -375,16 +375,16 @@ impl VkImGuiRenderPass {
                 .final_layout(vk::ImageLayout::PRESENT_SRC_KHR)
                 .build(),
 
-            // vk::AttachmentDescription::builder()
-            //     .format(swapchain_info.surface_format.format)
-            //     .samples(vk::SampleCountFlags::TYPE_1)
-            //     .load_op(vk::AttachmentLoadOp::DONT_CARE)
-            //     .store_op(vk::AttachmentStoreOp::STORE)
-            //     .stencil_load_op(vk::AttachmentLoadOp::DONT_CARE)
-            //     .stencil_store_op(vk::AttachmentStoreOp::DONT_CARE)
-            //     .initial_layout(vk::ImageLayout::UNDEFINED)
-            //     .final_layout(vk::ImageLayout::PRESENT_SRC_KHR)
-            //     .build(),
+            vk::AttachmentDescription::builder()
+                .format(swapchain_info.surface_format.format)
+                .samples(vk::SampleCountFlags::TYPE_1)
+                .load_op(vk::AttachmentLoadOp::DONT_CARE)
+                .store_op(vk::AttachmentStoreOp::STORE)
+                .stencil_load_op(vk::AttachmentLoadOp::DONT_CARE)
+                .stencil_store_op(vk::AttachmentStoreOp::DONT_CARE)
+                .initial_layout(vk::ImageLayout::UNDEFINED)
+                .final_layout(vk::ImageLayout::PRESENT_SRC_KHR)
+                .build(),
         ];
 
         let color_attachment_refs = [
@@ -394,17 +394,17 @@ impl VkImGuiRenderPass {
             }
         ];
 
-        // let resolve_attachment_refs = [
-        //     vk::AttachmentReference {
-        //         attachment: 1,
-        //         layout: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-        //     }
-        // ];
+        let resolve_attachment_refs = [
+            vk::AttachmentReference {
+                attachment: 1,
+                layout: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
+            }
+        ];
 
         let subpasses = [
             vk::SubpassDescription::builder()
                 .color_attachments(&color_attachment_refs)
-                //.resolve_attachments(&resolve_attachment_refs)
+                .resolve_attachments(&resolve_attachment_refs)
                 .pipeline_bind_point(vk::PipelineBindPoint::GRAPHICS)
                 .build()
         ];
@@ -541,7 +541,7 @@ impl VkImGuiRenderPass {
         swapchain_image_views
             .iter()
             .map(|&swapchain_image_view| {
-                let framebuffer_attachments = [swapchain_image_view];
+                let framebuffer_attachments = [color_image_view, swapchain_image_view];
                 let frame_buffer_create_info = vk::FramebufferCreateInfo::builder()
                     .render_pass(*renderpass)
                     .attachments(&framebuffer_attachments)
@@ -752,11 +752,18 @@ impl VkImGuiRenderPass {
     ) -> VkResult<()> {
         let command_buffer_begin_info = vk::CommandBufferBeginInfo::builder();
 
-        let clear_values = [vk::ClearValue {
-            color: vk::ClearColorValue {
-                float32: [0.0, 0.0, 0.0, 1.0],
+        let clear_values = [
+            vk::ClearValue {
+                color: vk::ClearColorValue {
+                    float32: [0.0, 0.0, 0.0, 1.0],
+                },
             },
-        }];
+            vk::ClearValue {
+                color: vk::ClearColorValue {
+                    float32: [0.0, 0.0, 0.0, 1.0],
+                },
+            }
+        ];
 
         fn drop_old_buffers(buffers: &mut Vec<ManuallyDrop<VkBuffer>>) {
             for b in buffers.iter_mut() {
