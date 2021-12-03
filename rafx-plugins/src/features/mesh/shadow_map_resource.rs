@@ -12,6 +12,7 @@ use rafx::graph::{PreparedRenderGraph, RenderGraphImageUsageId};
 use rafx::rafx_visibility::{
     DepthRange, OrthographicParameters, PerspectiveParameters, Projection,
 };
+use rafx::render_feature_write_job_prelude::RenderFeature;
 use rafx::render_features::{
     ExtractResources, RenderFeatureMask, RenderFeatureMaskBuilder, RenderPhaseMask,
     RenderPhaseMaskBuilder, RenderView, RenderViewDepthRange, RenderViewSet,
@@ -31,7 +32,6 @@ pub enum ShadowMapRenderView {
     Cube([RenderView; 6]),
 }
 
-#[derive(Default)]
 pub struct ShadowMapResource {
     // These are populated by recalculate_shadow_map_views()
     pub(super) shadow_map_lookup: FnvHashMap<LightId, usize>,
@@ -43,11 +43,41 @@ pub struct ShadowMapResource {
     // Populated by set_shadow_map_image_views, after the render graph is constructed and image
     // resources are allocated
     pub(super) shadow_map_image_views: Vec<ResourceArc<ImageViewResource>>,
+
+    shadow_map_feature_mask_builder: Option<RenderFeatureMaskBuilder>,
+    shadow_map_feature_mask: Option<RenderFeatureMask>,
 }
 
 impl ShadowMapResource {
+    pub fn new() -> Self {
+        ShadowMapResource {
+            shadow_map_lookup: Default::default(),
+            shadow_map_render_views: Default::default(),
+            image_usage_ids: Default::default(),
+            shadow_map_image_views: Default::default(),
+            shadow_map_feature_mask_builder: Some(
+                RenderFeatureMaskBuilder::default().add_render_feature::<MeshRenderFeature>(),
+            ),
+            shadow_map_feature_mask: Default::default(),
+        }
+    }
+
     pub fn shadow_map_render_views(&self) -> &[ShadowMapRenderView] {
         &self.shadow_map_render_views
+    }
+
+    pub fn shadow_map_lookup(&self) -> &FnvHashMap<LightId, usize> {
+        &self.shadow_map_lookup
+    }
+
+    pub fn shadow_map_image_views(&self) -> &Vec<ResourceArc<ImageViewResource>> {
+        &self.shadow_map_image_views
+    }
+
+    pub fn add_shadow_map_feature<T: RenderFeature>(&mut self) {
+        if let Some(builder) = self.shadow_map_feature_mask_builder.take() {
+            self.shadow_map_feature_mask_builder = Some(builder.add_render_feature::<T>());
+        };
     }
 
     pub fn append_render_views(
@@ -85,8 +115,14 @@ impl ShadowMapResource {
         //
         // Determine shadowmap views
         //
-        let (shadow_map_lookup, shadow_map_render_views) =
-            calculate_shadow_map_views(&render_view_set, extract_resources);
+        if let Some(shadow_map_feature_mask_builder) = self.shadow_map_feature_mask_builder.take() {
+            self.shadow_map_feature_mask = Some(shadow_map_feature_mask_builder.build());
+        };
+        let (shadow_map_lookup, shadow_map_render_views) = calculate_shadow_map_views(
+            &render_view_set,
+            extract_resources,
+            self.shadow_map_feature_mask.unwrap(),
+        );
 
         self.shadow_map_lookup = shadow_map_lookup;
         self.shadow_map_render_views = shadow_map_render_views;
@@ -143,6 +179,7 @@ pub fn perspective_rh(
 fn calculate_shadow_map_views(
     render_view_set: &RenderViewSet,
     extract_resources: &ExtractResources,
+    default_shadow_map_feature_mask: RenderFeatureMask,
 ) -> (FnvHashMap<LightId, usize>, Vec<ShadowMapRenderView>) {
     let world_fetch = extract_resources.fetch::<World>();
     let world = &*world_fetch;
@@ -160,9 +197,7 @@ fn calculate_shadow_map_views(
         && render_options.show_shadows
         && render_options.enable_lighting
     {
-        RenderFeatureMaskBuilder::default()
-            .add_render_feature::<MeshRenderFeature>()
-            .build()
+        default_shadow_map_feature_mask
     } else {
         RenderFeatureMask::empty()
     };
@@ -217,7 +252,7 @@ fn calculate_shadow_map_views(
 
     let mut query = <(Entity, Read<DirectionalLightComponent>)>::query();
     for (entity, light) in query.iter(world) {
-        let eye_position = light.direction * -40.0;
+        let eye_position = light.direction * -100.0;
         let view = glam::Mat4::look_at_rh(
             eye_position,
             glam::Vec3::ZERO,
@@ -225,8 +260,8 @@ fn calculate_shadow_map_views(
         );
 
         let near_plane = 0.25;
-        let far_plane = 100.0;
-        let ortho_projection_size = 10.0;
+        let far_plane = 150.0;
+        let ortho_projection_size = 50.0;
         let view_frustum: ViewFrustumArc = light.view_frustum.clone();
         let projection = Projection::Orthographic(OrthographicParameters::new(
             -ortho_projection_size,
@@ -249,7 +284,7 @@ fn calculate_shadow_map_views(
             eye_position,
             view,
             projection.as_rh_mat4(),
-            (SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION),
+            (2 * SHADOW_MAP_RESOLUTION, 2 * SHADOW_MAP_RESOLUTION),
             RenderViewDepthRange::from_projection(&projection),
             shadow_map_phase_mask,
             shadow_map_feature_mask,

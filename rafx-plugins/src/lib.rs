@@ -4,4 +4,4 @@ pub mod features;
 pub mod phases;
 pub mod pipelines;
 
-mod shaders;
+pub mod shaders;
