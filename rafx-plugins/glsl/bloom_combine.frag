@@ -30,6 +30,7 @@ const int OUTPUT_COLOR_SPACE_P3 = 1;
 layout (set = 0, binding = 3) uniform Config {
     int tonemapper_type;
     int output_color_space;
+    float max_color_component_value;
 } config;
 
 layout(set = 0, binding = 4) buffer HistogramResultBuffer
@@ -62,6 +63,7 @@ void main()
     vec3 color_srgb_linear = tonemap(
         color,
         config.tonemapper_type,
+        config.max_color_component_value,
         histogram_result.result.low_luminosity_interpolated,
         histogram_result.result.average_luminosity_interpolated,
         histogram_result.result.high_luminosity_interpolated,
