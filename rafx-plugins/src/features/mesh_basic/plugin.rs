@@ -91,7 +91,7 @@ impl RenderFeaturePlugin for MeshBasicRendererPlugin {
 
         render_resources.insert(MeshBasicStaticResources { depth_material });
 
-        render_resources.insert(MeshBasicShadowMapResource::default());
+        render_resources.insert(MeshBasicShadowMapResource::new());
 
         Ok(())
     }
