@@ -1,5 +1,4 @@
 use crate::input::InputResource;
-use crate::scenes::util::FlyCamera;
 use crate::time::TimeState;
 use crate::RenderOptions;
 use distill::loader::handle::Handle;
@@ -17,7 +16,7 @@ use rafx_plugins::assets::mesh_basic::PrefabBasicAsset;
 use rafx_plugins::features::debug3d::Debug3DRenderFeature;
 use rafx_plugins::features::mesh_basic::{
     MeshBasicNoShadowsRenderFeatureFlag, MeshBasicRenderFeature, MeshBasicRenderObjectSet,
-    MeshBasicUnlitRenderFeatureFlag, MeshBasicUntexturedRenderFeatureFlag,
+    MeshBasicRenderOptions, MeshBasicUnlitRenderFeatureFlag, MeshBasicUntexturedRenderFeatureFlag,
     MeshBasicWireframeRenderFeatureFlag,
 };
 use rafx_plugins::features::skybox::SkyboxRenderFeature;
@@ -29,12 +28,14 @@ use rafx_plugins::phases::{
     WireframeRenderPhase,
 };
 
-pub(super) struct PbrTestScene {
+use super::util::FlyCamera;
+
+pub(super) struct BistroScene {
     main_view_frustum: ViewFrustumArc,
     fly_camera: FlyCamera,
 }
 
-impl PbrTestScene {
+impl BistroScene {
     pub(super) fn new(
         world: &mut World,
         resources: &Resources,
@@ -44,21 +45,24 @@ impl PbrTestScene {
 
         let mut render_options = resources.get_mut::<RenderOptions>().unwrap();
         *render_options = RenderOptions::default_3d();
-        render_options.show_skybox = false;
+
+        let mut mesh_render_options = resources.get_mut::<MeshBasicRenderOptions>().unwrap();
+        mesh_render_options.ambient_light = glam::Vec3::new(0.005, 0.005, 0.005);
 
         let mut mesh_render_objects = resources.get_mut::<MeshBasicRenderObjectSet>().unwrap();
 
         let visibility_region = resources.get::<VisibilityRegion>().unwrap();
 
         let mut fly_camera = FlyCamera::default();
-        fly_camera.position = glam::Vec3::new(15.0, -90.0, 15.0);
-        fly_camera.yaw = std::f32::consts::FRAC_PI_2;
+        fly_camera.position = glam::Vec3::new(-15.510543, 2.3574839, 5.751496);
+        fly_camera.pitch = -0.23093751;
+        fly_camera.yaw = -0.16778418;
         fly_camera.lock_view = true;
 
         let prefab_asset_handle: Handle<PrefabBasicAsset> =
-            asset_resource.load_asset_path("pbr-test/Scene.001.blender_prefab");
+            asset_resource.load_asset_path("bistro/bistro_merged/Scene.blender_prefab");
         asset_manager
-            .wait_for_asset_to_load(&prefab_asset_handle, &mut asset_resource, "pbr test scene")
+            .wait_for_asset_to_load(&prefab_asset_handle, &mut asset_resource, "bistro scene")
             .unwrap();
         let prefab_asset = asset_resource.asset(&prefab_asset_handle).unwrap().clone();
 
@@ -74,19 +78,22 @@ impl PbrTestScene {
 
         let main_view_frustum = visibility_region.register_view_frustum();
 
-        PbrTestScene {
+        BistroScene {
             main_view_frustum,
             fly_camera,
         }
     }
 }
 
-impl super::TestScene for PbrTestScene {
+impl super::TestScene for BistroScene {
     fn update(
         &mut self,
         _world: &mut World,
         resources: &mut Resources,
     ) {
+        //let mut debug_draw = resources.get_mut::<Debug3DResource>().unwrap();
+        //super::add_light_debug_draw(&resources, &world);
+
         {
             let input_resource = resources.get::<InputResource>().unwrap();
             let time_state = resources.get::<TimeState>().unwrap();
@@ -181,17 +188,13 @@ fn update_main_view_3d(
     let aspect_ratio = viewports_resource.main_window_size.width as f32
         / viewports_resource.main_window_size.height as f32;
 
-    //
-    // Fly camera
-    //
-
     let eye = fly_camera.position;
     let look_at = fly_camera.position + fly_camera.look_dir;
-    let up = fly_camera.up_dir;
+    let up = glam::Vec3::Z;
 
     let view = glam::Mat4::look_at_rh(eye, look_at, up);
 
-    let fov_y_radians = 0.4;
+    let fov_y_radians = std::f32::consts::FRAC_PI_4;
     let near_plane = 0.01;
 
     let projection = Projection::Perspective(PerspectiveParameters::new(
